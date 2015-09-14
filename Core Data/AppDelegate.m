@@ -16,7 +16,63 @@
 
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-    // Override point for customization after application launch.
+    
+    // Create Managed Object
+    NSEntityDescription *entityDescription = [NSEntityDescription entityForName:@"Person" inManagedObjectContext:self.managedObjectContext];
+    NSManagedObject *newPerson = [[NSManagedObject alloc] initWithEntity:entityDescription insertIntoManagedObjectContext:self.managedObjectContext];
+    
+    [newPerson setValue:@"Bart" forKey:@"first"];
+    [newPerson setValue:@"Jacobs" forKey:@"last"];
+    [newPerson setValue:@44 forKey:@"age"];
+    
+    NSError *error = nil;
+    
+    if (![newPerson.managedObjectContext save:&error]) {
+        NSLog(@"Unable to save managed object context.");
+        NSLog(@"%@, %@", error, error.localizedDescription);
+    }
+    
+    NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
+    [fetchRequest setEntity:entityDescription];
+    NSArray *result = [self.managedObjectContext executeFetchRequest:fetchRequest error:&error];
+    
+    if (error) {
+        NSLog(@"Unable to execute fetch request.");
+        NSLog(@"%@, %@", error, error.localizedDescription);
+        
+    } else {
+        NSLog(@"%@", result);
+    }
+    
+    if (result.count > 0) {
+        NSManagedObject *person = (NSManagedObject *)[result objectAtIndex:0];
+        NSLog(@"1 - %@", person);
+        
+        NSLog(@"%@ %@", [person valueForKey:@"first"], [person valueForKey:@"last"]);
+        
+        NSLog(@"2 - %@", person);
+    }
+    
+    NSManagedObject *person = (NSManagedObject *)[result objectAtIndex:0];
+    
+    [person setValue:@30 forKey:@"age"];
+    
+    NSError *saveError = nil;
+    
+    if (![person.managedObjectContext save:&saveError]) {
+        NSLog(@"Unable to save managed object context.");
+        NSLog(@"%@, %@", saveError, saveError.localizedDescription);
+    }
+    
+    [self.managedObjectContext deleteObject:person];
+    
+    NSError *deleteError = nil;
+    
+    if (![person.managedObjectContext save:&deleteError]) {
+        NSLog(@"Unable to save managed object context.");
+        NSLog(@"%@, %@", deleteError, deleteError.localizedDescription);
+    }
+    
     return YES;
 }
 
